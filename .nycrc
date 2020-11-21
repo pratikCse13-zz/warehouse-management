@@ -1,0 +1,7 @@
+{
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "all": true,
+    "include": ["src/**"],
+    "exclude": ["src/common/errors.ts", "src/common/app-config.ts"],
+    "excludeNodeModules": true
+}

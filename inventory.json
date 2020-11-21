@@ -1,0 +1,74 @@
+{
+    "inventory": [
+        {
+            "id": "f44a914c-c380-451a-96b1-4c5a9fa025f6",
+            "name": "leg",
+            "stock": 1234,
+            "damagedStock": 3,
+            "warehouseId": "eed9ffe0-c254-4538-82f0-13e8c7990211"
+        },
+        {
+            "id": "000459a0-7377-401b-9878-a975085b87f3",
+            "name": "screw",
+            "stock": 12000,
+            "damagedStock": 12,
+            "warehouseId": "1098d638-c0d2-4e50-863b-e7d5f121a5da"
+        },
+        {
+            "id": "331b662a-2a42-44d7-9325-0bc7bd3ab8fe",
+            "name": "seat",
+            "stock": 567,
+            "damagedStock": 123,
+            "warehouseId": "683d5836-be70-49a4-92d7-8703d323f658"
+        },
+        {
+            "id": "a6142067-2cb3-4e19-9dc4-706790f2e0f1",
+            "name": "Table top",
+            "stock": 129,
+            "damagedStock": 12,
+            "warehouseId": "1cddd017-d73e-4ede-a2c1-da13d2b3b640"
+        },
+        {
+            "id": "a6142067-2cb3-4e19-9dc4-706790f2e0f1",
+            "name": "Hand rest",
+            "stock": 1562,
+            "damagedStock": 12,
+            "warehouseId": "505c9943-eefa-4205-b1bb-959141272f45"
+        },
+        {
+            "id": "a6142067-2cb3-4e19-9dc4-706790f2e0f1",
+            "name": "Dup Id Table Top",
+            "stock": 1562,
+            "damagedStock": 12,
+            "warehouseId": "505c9943-eefa-4205-b1bb-959141272f45"
+        },
+        {
+            "id": "203f47c2-7807-4e06-8c97-9149a6d12c53",
+            "name": "Rubber base",
+            "stock": 1562244,
+            "damagedStock": 12,
+            "warehouseId": "eed9ffe0-c254-4538-82f0-13e8c7990211"
+        },
+        {
+            "id": "4591ebc8-3164-4de5-ae65-e81dd4a4a62a",
+            "name": "sticker",
+            "stock": 45345353,
+            "damagedStock": 42344,
+            "warehouseId": "eed9ffe0-c254-4538-82f0-13e8c7990211"
+        },
+        {
+            "id": "0d846d21-2c43-4f8a-8657-86db7db735f0",
+            "name": "door",
+            "stock": 45345353,
+            "damagedStock": 42344,
+            "warehouseId": "eed9ffe0-c254-4538-82f0-13e8c7990211"
+        },
+        {
+            "id": "a676147f-ec71-4bf8-8eed-36c587238da5",
+            "name": "knob",
+            "stock": 45345353,
+            "damagedStock": 42344,
+            "warehouseId": "eed9ffe0-c254-4538-82f0-13e8c7990211"
+        }
+    ]
+}

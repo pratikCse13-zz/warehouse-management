@@ -1,0 +1,12 @@
+node_modules/
+.idea/
+coverage/
+.coverage/
+.nyc_output/
+target/
+.sonar/
+dist/
+*.iml
+.serverless/
+misc/deploy.sh
+.DS_Store

@@ -1,0 +1,40 @@
+dataUploadBucket:
+  name: ${self:service}-upload-bucket-${self:provider.stage}
+  arn: arn:aws:s3:::${self:custom.dataUploadBucket.name}
+
+dataUploadNotificationQueue:
+  name: ${self:service}-upload-notification-queue-${self:provider.stage}
+  arn: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:${self:custom.dataUploadNotificationQueue.name}
+  url: https://sqs.#{AWS::Region}.amazonaws.com/#{AWS::AccountId}/${self:custom.dataUploadNotificationQueue.name}
+
+dataUploadNotificationDlq:
+  name: ${self:service}-upload-notification-dlq-${self:provider.stage}
+  arn: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:${self:custom.dataUploadNotificationDlq.name}
+
+articleTable:
+  name: ${self:service}-articles-${self:provider.stage}
+  arn: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:custom.articleTable.name}
+
+productTable:
+  name: ${self:service}-products-${self:provider.stage}
+  arn: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:custom.productTable.name}
+
+lambdaFunction:
+  timeout:
+    http: 28
+    other: 900
+
+pitr:
+  perStage:
+    acc: true
+    prd: true
+    other: false
+  enabled: ${self:custom.pitr.perStage.${self:provider.stage}, self:custom.pitr.perStage.other}
+
+logLevel:
+  prd: warn
+  other: debug
+
+authorizerLambda:
+  name: ${self:service}-${self:provider.stage}-authorizer
+  arn: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:custom.authorizerLambda.name}

@@ -1,0 +1,34 @@
+{
+    "extends": "@tsconfig/node12/tsconfig.json",
+    "compileOnSave": true,
+    "compilerOptions": {
+        "sourceMap": true,
+        "outDir": "dist",
+        "rootDir": "src",
+        "noImplicitAny": false,
+        "moduleResolution": "node",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "allowSyntheticDefaultImports": true,
+        "declaration": true
+    },
+    "plugins": [
+        {
+            "name": "typescript-tslint-plugin"
+        }
+    ],
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "src/types"
+    ],
+    "typeRoots": [
+        "src/types"
+    ],
+    "types": [
+        "node"
+    ]
+}
+  

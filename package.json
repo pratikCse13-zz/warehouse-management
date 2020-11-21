@@ -1,0 +1,73 @@
+{
+  "name": "warehouse-management",
+  "version": "1.0.0",
+  "description": "an implementation of a warehouse software",
+  "main": "index.js",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "tsc",
+    "test": "nyc mocha 'test/**/*.test.ts'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pratikCse13/warehouse-management.git"
+  },
+  "mocha": {
+    "require": "ts-node/register"
+  },
+  "author": "pratik",
+  "license": "ISC",
+  "dependencies": {
+    "@dazn/lambda-powertools-logger": "^1.24.1",
+    "@js-joda/core": "^3.2.0",
+    "@js-joda/timezone": "^2.4.0",
+    "@middy/core": "^1.4.0",
+    "@shiftcoders/dynamo-easy": "^7.1.0",
+    "@types/aws-lambda": "^8.10.64",
+    "aws-sdk": "^2.792.0",
+    "fp-ts": "^2.8.5",
+    "io-ts": "^2.2.12",
+    "io-ts-types": "^0.5.12",
+    "lodash": "^4.17.20",
+    "middy": "^0.36.0",
+    "monocle-ts": "^2.3.3",
+    "newtype-ts": "^0.3.4",
+    "reflect-metadata": "^0.1.13",
+    "serverless": "^2.7.0",
+    "url": "^0.11.0",
+    "uuid": "^8.3.1"
+  },
+  "devDependencies": {
+    "@fluffy-spoon/substitute": "^1.170.0",
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@tsconfig/node12": "^1.0.7",
+    "@types/mocha": "^8.0.4",
+    "@types/node": "^14.14.7",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-exclude": "^2.0.2",
+    "chai-spies": "^1.0.0",
+    "grunt": "^1.3.0",
+    "grunt-contrib-clean": "^2.0.0",
+    "grunt-run": "^0.8.1",
+    "grunt-simple-nyc": "^3.0.1",
+    "grunt-sonar-runner": "^2.4.8",
+    "grunt-ts": "^6.0.0-beta.22",
+    "grunt-tslint": "^5.0.2",
+    "istanbul": "^0.4.5",
+    "mocha": "^8.2.1",
+    "mocha-junit-reporter": "^2.0.0",
+    "mocha-param": "^2.0.1",
+    "nyc": "^15.1.0",
+    "serverless-deployment-bucket": "^1.3.0",
+    "serverless-iam-roles-per-function": "^2.0.2",
+    "serverless-prune-plugin": "^1.4.3",
+    "serverless-pseudo-parameters": "^2.5.0",
+    "ts-node": "^9.0.0",
+    "tslint": "^6.1.3",
+    "typescript": "^4.0.5"
+  }
+}

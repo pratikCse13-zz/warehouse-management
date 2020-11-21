@@ -1,0 +1,292 @@
+service: warehouse-management
+
+package:
+  exclude:
+    - '**/serverless*.yml'
+    - '**/*.md'
+    - '**/test/**'
+    - '**/target/**'
+    - '**/.git*'
+    - '**/Gruntfile.js'
+    - '.editorconfig'
+    - '.idea/**'
+    - '.nyc_output/**'
+    - '.nycrc'
+    - 'application-properties.yml'
+    - 'tsconfig.json'
+    - 'tslint.json'
+    - 'src/**'
+    - 'misc/**'
+  excludeDevDependencies: true
+
+custom: ${file(./application-properties.yml)}
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: eu-central-1
+  stage: ${opt:stage, 'dev'}
+  deploymentBucket: 
+    name: ${self:service}-deploy-bucket
+  timeout: 29
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTelemetryRecords
+        - xray:PutTraceSegments
+      Resource: '*'
+    - Effect: Allow
+      Action:
+        - execute-api:Invoke
+      Resource:
+        - arn:aws:execute-api:#{AWS::Region}:*:*/*/*/*
+  tracing:
+    apiGateway: true
+    lambda: true
+  environment:
+    LOG_LEVEL: ${self:custom.logLevel.${self:provider.stage}, self:custom.logLevel.other}
+    UPLOAD_BUCKET_NAME: ${self:custom.dataUploadBucket.name}
+    ARTICLE_TABLE_NAME: ${self:custom.articleTable.name}
+    PRODUCT_TABLE_NAME: ${self:custom.productTable.name}
+
+functions:
+  uploadData:
+    handler: dist/handler.uploadData
+    events:
+      - sqs:
+          arn: ${self:custom.dataUploadNotificationQueue.arn}
+          batchSize: 1
+          maximumRetryAttempts: 10
+    iamRoleStatementsInherit: true
+    iamRoleStatementsName: ${self:service}-${self:provider.stage}-uploadData
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:ConditionCheckItem
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+          - dynamodb:Scan
+        Resource: 
+          - ${self:custom.articleTable.arn}
+          - ${self:custom.productTable.arn}
+      - Effect: Allow
+        Action:
+          - sqs:DeleteMessage
+          - sqs:GetQueueAttributes
+          - sqs:ReceiveMessage
+        Resource: 
+          - ${self:custom.dataUploadNotificationQueue.arn}
+          - ${self:custom.dataUploadNotificationDlq.arn}
+      - Effect: Allow
+        Action:
+          - s3:GetObject
+          - s3:GetObjectTagging
+          - s3:PutObject
+          - s3:PutObjectTagging
+          - s3:DeleteObject
+        Resource: 
+          - ${self:custom.dataUploadBucket.arn}/*
+
+  authorizer:
+    handler: dist/handler.authorizer
+    timeout: ${self:custom.lambdaFunction.timeout.http}
+    
+  listProducts:
+    handler: dist/handler.listProducts
+    timeout: ${self:custom.lambdaFunction.timeout.http}
+    events:
+      - http:
+          path: /products
+          method: get
+          authorizer:
+            type: CUSTOM
+            authorizerId:
+              Ref: CodecAuthorizer
+    iamRoleStatementsInherit: true
+    iamRoleStatementsName: ${self:service}-${self:provider.stage}-listProducts
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:ConditionCheckItem
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+          - dynamodb:Scan
+          - dynamodb:Query
+        Resource:
+          - ${self:custom.articleTable.arn}
+          - ${self:custom.productTable.arn}
+
+  getProductAvailability:
+    handler: dist/handler.getProductAvailability
+    timeout: ${self:custom.lambdaFunction.timeout.http}
+    events:
+      - http:
+          path: /products/{productId}/availability
+          method: get
+          authorizer:
+            type: CUSTOM
+            authorizerId:
+              Ref: CodecAuthorizer
+    iamRoleStatementsInherit: true
+    iamRoleStatementsName: ${self:service}-${self:provider.stage}-getProductAvailability
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:ConditionCheckItem
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+          - dynamodb:Scan
+          - dynamodb:Query
+        Resource:
+          - ${self:custom.articleTable.arn}
+          - ${self:custom.productTable.arn}
+
+  sellProduct:
+    handler: dist/handler.sellProduct
+    timeout: ${self:custom.lambdaFunction.timeout.http}
+    events:
+      - http:
+          path: /products/{productId}/sell
+          method: patch
+          authorizer:
+            type: CUSTOM
+            authorizerId:
+              Ref: CodecAuthorizer
+    iamRoleStatementsInherit: true
+    iamRoleStatementsName: ${self:service}-${self:provider.stage}-sellProduct
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:ConditionCheckItem
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+          - dynamodb:Scan
+          - dynamodb:Query
+        Resource:
+          - ${self:custom.articleTable.arn}
+          - ${self:custom.productTable.arn}
+
+resources:
+  Resources:
+    DataUploadNotificationDlq:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:custom.dataUploadNotificationDlq.name}
+        MessageRetentionPeriod: 1209600 # max retention value at the moment is 14 days.
+        Tags:
+          - Key: queue-type
+            Value: DLQ
+
+    DataUploadNotificationQueue:
+      Type: AWS::SQS::Queue
+      DependsOn: DataUploadNotificationDlq
+      Properties:
+        QueueName: ${self:custom.dataUploadNotificationQueue.name}
+        RedrivePolicy:
+          deadLetterTargetArn: ${self:custom.dataUploadNotificationDlq.arn}
+          maxReceiveCount: 5
+      
+    DataUploadNotificationQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      DependsOn: DataUploadNotificationQueue
+      Properties:
+        Queues:
+          - ${self:custom.dataUploadNotificationQueue.url}
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal: 
+                Service: s3.amazonaws.com
+              Action: sqs:SendMessage
+              Resource: "*"
+
+    DataUploadBucket:
+      Type: AWS::S3::Bucket
+      DependsOn: DataUploadNotificationQueuePolicy
+      Properties:
+        BucketName: ${self:custom.dataUploadBucket.name}
+        NotificationConfiguration:
+          QueueConfigurations:
+            - Event: s3:ObjectCreated:*
+              Queue: ${self:custom.dataUploadNotificationQueue.arn}
+              Filter:
+                S3Key:
+                  Rules:
+                    - Name: prefix
+                      Value: articles
+                    - Name: suffix
+                      Value: .json
+            - Event: s3:ObjectCreated:*
+              Queue: ${self:custom.dataUploadNotificationQueue.arn}
+              Filter:
+                S3Key:
+                  Rules:
+                    - Name: prefix
+                      Value: products
+                    - Name: suffix
+                      Value: .json
+
+    ArticleTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: ${self:custom.pitr.enabled}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: warehouseId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          - AttributeName: warehouseId
+            KeyType: RANGE
+        TableName: ${self:custom.articleTable.name}
+
+    ProductTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: ${self:custom.pitr.enabled}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        TableName: ${self:custom.productTable.name}
+
+    CodecAuthorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        AuthorizerResultTtlInSeconds: 0
+        IdentitySource: method.request.header.authorization
+        Name: CodecAuthorizer
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        AuthorizerUri: arn:aws:apigateway:#{AWS::Region}:lambda:path/2015-03-31/functions/${self:custom.authorizerLambda.arn}/invocations
+        Type: TOKEN
+
+    InvokeAuthorizerPermission:
+      Type: AWS::Lambda::Permission
+      Properties: 
+        Action: lambda:InvokeFunction
+        FunctionName: ${self:custom.authorizerLambda.name}
+        Principal: apigateway.amazonaws.com
+        SourceArn: 
+          Fn::Join:
+            - ''
+            - - 'arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:' 
+              - Ref: ApiGatewayRestApi
+              - '/authorizers/'
+              - Ref: CodecAuthorizer
+
+plugins:
+  - serverless-deployment-bucket
+  - serverless-pseudo-parameters
+  - serverless-prune-plugin
+  - serverless-iam-roles-per-function

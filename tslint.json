@@ -1,0 +1,29 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        "max-classes-per-file": false,
+        "max-line-length": [true, 180],
+        "object-literal-sort-keys": false,
+        "no-require-imports": false,
+        "no-var-requires": false,
+        "arrow-return-shorthand": true,
+        "quotemark": [true, "single"],
+        "no-namespace": [false, "allow-declarations"],
+        "no-parameter-reassignment": true,
+        "indent": [true, "spaces", 4],
+        "strict": [
+            "error",
+            "global"
+        ],
+        "linebreak-style": [true, "LF"],
+        "semicolon": [true, "always"],
+        "trailing-comma": [true, {"multiline": "always", "singleline": "never"}],
+        "no-console": false,
+        "no-redundant-jsdoc": true
+    },
+    "rulesDirectory": []
+}
